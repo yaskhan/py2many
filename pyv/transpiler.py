@@ -3,7 +3,7 @@ import re
 import string
 from typing import Dict, List, Optional, Set, Tuple, Union
 
-from py2many.analysis import get_id, is_mutable, is_void_function
+from py2many.analysis import get_id, is_generator_function, is_mutable, is_void_function
 from py2many.ast_helpers import create_ast_node
 from py2many.clike import class_for_typename
 from py2many.declaration_extractor import DeclarationExtractor
@@ -166,6 +166,12 @@ class VTranspiler(CLikeTranspiler):
     def _new_tmp(self, prefix: str = "tmp") -> str:
         self._tmp_var_id += 1
         return f"__{prefix}{self._tmp_var_id}"
+
+    def _is_generator_function(self, node: ast.AST) -> bool:
+        """Check if a function node is a generator (contains yield statements)."""
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return is_generator_function(node)
+        return False
 
     def visit_Module(self, node: ast.Module) -> str:
         code = super().visit_Module(node)
